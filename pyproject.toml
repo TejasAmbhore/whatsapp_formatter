@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "py-whatsapp-formatter"
-version = "1.0.1"
+version = "1.0.2"
 description = "Convert Markdown and HTML to WhatsApp-compatible formatting"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Tejas Ambhore", email = "tejasam2020@gmail.com"}
 ]
 keywords = ["whatsapp", "markdown", "html", "formatter", "converter"]
 classifiers = [
