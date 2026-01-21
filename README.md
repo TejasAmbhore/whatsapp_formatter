@@ -5,7 +5,7 @@ A Python library to convert Markdown and HTML to WhatsApp-compatible formatting.
 ## Installation
 
 ```bash
-pip install whatsapp-formatter
+pip install py-whatsapp-formatter
 ```
 
 ## Usage
