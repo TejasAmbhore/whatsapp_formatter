@@ -6,11 +6,17 @@ from typing import Callable
 
 from .rules import (
     BaseRule,
+    HTMLBlockquoteRule,
     HTMLBoldRule,
     HTMLCodeRule,
     HTMLItalicRule,
+    HTMLLineBreakRule,
+    HTMLOrderedListRule,
+    HTMLParagraphRule,
+    HTMLPreRule,
     HTMLStrikethroughRule,
     HTMLStripTagsRule,
+    HTMLUnorderedListRule,
     MarkdownBoldRule,
     MarkdownFinalizeBoldRule,
     MarkdownItalicRule,
@@ -101,10 +107,16 @@ class HTMLToWhatsAppConverter(BaseConverter):
     def __init__(self, strip_remaining_tags: bool = True) -> None:
         super().__init__()
 
+        self.add_rule(HTMLPreRule())
         self.add_rule(HTMLCodeRule())
         self.add_rule(HTMLBoldRule())
         self.add_rule(HTMLItalicRule())
         self.add_rule(HTMLStrikethroughRule())
+        self.add_rule(HTMLLineBreakRule())
+        self.add_rule(HTMLParagraphRule())
+        self.add_rule(HTMLUnorderedListRule())
+        self.add_rule(HTMLOrderedListRule())
+        self.add_rule(HTMLBlockquoteRule())
 
         if strip_remaining_tags:
             self.add_rule(HTMLStripTagsRule())

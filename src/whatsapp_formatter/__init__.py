@@ -22,7 +22,7 @@ from .converter import (
 )
 from .rules import BaseRule, FormattingRule
 
-__version__ = "1.0.0"
+__version__ = "1.0.3"
 __all__ = [
     "convert_markdown_to_whatsapp",
     "convert_html_to_whatsapp",

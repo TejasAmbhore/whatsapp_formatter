@@ -161,6 +161,82 @@ class HTMLCodeRule(BaseRule):
         )
 
 
+class HTMLLineBreakRule(BaseRule):
+    name = "html_br"
+    priority = 40
+
+    def apply(self, content: str) -> str:
+        return re.sub(r"<br\s*/?>", "\n", content, flags=re.IGNORECASE)
+
+
+class HTMLParagraphRule(BaseRule):
+    name = "html_paragraph"
+    priority = 45
+
+    def apply(self, content: str) -> str:
+        content = re.sub(r"<p>(.*?)</p>", r"\1\n\n", content, flags=re.IGNORECASE | re.DOTALL)
+        content = re.sub(r"</p>", "\n\n", content, flags=re.IGNORECASE)
+        content = re.sub(r"<p>", "", content, flags=re.IGNORECASE)
+        return content
+
+
+class HTMLUnorderedListRule(BaseRule):
+    name = "html_ul"
+    priority = 50
+
+    def apply(self, content: str) -> str:
+        def convert_ul(match: re.Match[str]) -> str:
+            list_content = match.group(1)
+            items = re.findall(r"<li>(.*?)</li>", list_content, flags=re.IGNORECASE | re.DOTALL)
+            return "\n".join(f"- {item.strip()}" for item in items) + "\n"
+
+        return re.sub(r"<ul>(.*?)</ul>", convert_ul, content, flags=re.IGNORECASE | re.DOTALL)
+
+
+class HTMLOrderedListRule(BaseRule):
+    name = "html_ol"
+    priority = 51
+
+    def apply(self, content: str) -> str:
+        def convert_ol(match: re.Match[str]) -> str:
+            list_content = match.group(1)
+            items = re.findall(r"<li>(.*?)</li>", list_content, flags=re.IGNORECASE | re.DOTALL)
+            return "\n".join(f"{i}. {item.strip()}" for i, item in enumerate(items, 1)) + "\n"
+
+        return re.sub(r"<ol>(.*?)</ol>", convert_ol, content, flags=re.IGNORECASE | re.DOTALL)
+
+
+class HTMLBlockquoteRule(BaseRule):
+    name = "html_blockquote"
+    priority = 52
+
+    def apply(self, content: str) -> str:
+        def convert_quote(match: re.Match[str]) -> str:
+            quote_content = match.group(1).strip()
+            lines = quote_content.split("\n")
+            return "\n".join(f"> {line}" for line in lines)
+
+        return re.sub(
+            r"<blockquote>(.*?)</blockquote>",
+            convert_quote,
+            content,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+
+
+class HTMLPreRule(BaseRule):
+    name = "html_pre"
+    priority = 4
+
+    def apply(self, content: str) -> str:
+        return re.sub(
+            r"<pre>(.*?)</pre>",
+            r"```\1```",
+            content,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+
+
 class HTMLStripTagsRule(BaseRule):
     name = "html_strip"
     priority = 100
