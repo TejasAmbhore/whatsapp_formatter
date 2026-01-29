@@ -10,6 +10,11 @@ BOLD_PLACEHOLDER = "\x00WA_BOLD\x00"
 CODE_BLOCK_PLACEHOLDER = "\x00CODE_BLOCK_{}\x00"
 INLINE_CODE_PLACEHOLDER = "\x00INLINE_CODE_{}\x00"
 
+# Placeholders for WhatsApp to Markdown/HTML conversion
+WA_BOLD_PLACEHOLDER = "\x00WA_BOLD_CONTENT\x00"
+WA_ITALIC_PLACEHOLDER = "\x00WA_ITALIC_CONTENT\x00"
+WA_STRIKE_PLACEHOLDER = "\x00WA_STRIKE_CONTENT\x00"
+
 
 class FormattingRule(Protocol):
     """Protocol for formatting rules."""
@@ -114,9 +119,20 @@ class HTMLBoldRule(BaseRule):
     priority = 10
 
     def apply(self, content: str) -> str:
+        def replace_with_trimmed(match: re.Match[str]) -> str:
+            inner = match.group(1)
+            leading_ws = inner[: len(inner) - len(inner.lstrip())]
+            trailing_ws = inner[len(inner.rstrip()) :]
+            trimmed = inner.strip()
+
+            if not trimmed:  # Only whitespace inside
+                return inner  # Return just the whitespace, skip empty formatting
+
+            return f"{leading_ws}*{trimmed}*{trailing_ws}"
+
         return re.sub(
             r"<(?:b|strong)>(.*?)</(?:b|strong)>",
-            r"*\1*",
+            replace_with_trimmed,
             content,
             flags=re.IGNORECASE | re.DOTALL,
         )
@@ -127,9 +143,20 @@ class HTMLItalicRule(BaseRule):
     priority = 20
 
     def apply(self, content: str) -> str:
+        def replace_with_trimmed(match: re.Match[str]) -> str:
+            inner = match.group(1)
+            leading_ws = inner[: len(inner) - len(inner.lstrip())]
+            trailing_ws = inner[len(inner.rstrip()) :]
+            trimmed = inner.strip()
+
+            if not trimmed:  # Only whitespace inside
+                return inner  # Return just the whitespace, skip empty formatting
+
+            return f"{leading_ws}_{trimmed}_{trailing_ws}"
+
         return re.sub(
             r"<(?:i|em)>(.*?)</(?:i|em)>",
-            r"_\1_",
+            replace_with_trimmed,
             content,
             flags=re.IGNORECASE | re.DOTALL,
         )
@@ -140,9 +167,20 @@ class HTMLStrikethroughRule(BaseRule):
     priority = 30
 
     def apply(self, content: str) -> str:
+        def replace_with_trimmed(match: re.Match[str]) -> str:
+            inner = match.group(1)
+            leading_ws = inner[: len(inner) - len(inner.lstrip())]
+            trailing_ws = inner[len(inner.rstrip()) :]
+            trimmed = inner.strip()
+
+            if not trimmed:  # Only whitespace inside
+                return inner  # Return just the whitespace, skip empty formatting
+
+            return f"{leading_ws}~{trimmed}~{trailing_ws}"
+
         return re.sub(
             r"<(?:s|strike|del)>(.*?)</(?:s|strike|del)>",
-            r"~\1~",
+            replace_with_trimmed,
             content,
             flags=re.IGNORECASE | re.DOTALL,
         )
@@ -243,3 +281,232 @@ class HTMLStripTagsRule(BaseRule):
 
     def apply(self, content: str) -> str:
         return re.sub(r"<[^>]+>", "", content)
+
+
+# ============================================================================
+# WhatsApp to Markdown Rules
+# ============================================================================
+
+
+class WhatsAppPreserveCodeBlocksRule(PreservableRule):
+    """Preserve WhatsApp code blocks during conversion."""
+
+    name = "wa_code_block"
+    priority = 0
+    placeholder_template = CODE_BLOCK_PLACEHOLDER
+
+    def apply(self, content: str) -> str:
+        self._preserved.clear()
+
+        def save(match: re.Match[str]) -> str:
+            self._preserved.append(match.group(1))
+            return self.placeholder_template.format(len(self._preserved) - 1)
+
+        return re.sub(r"```([\s\S]*?)```", save, content)
+
+
+class WhatsAppPreserveInlineCodeRule(PreservableRule):
+    """Preserve WhatsApp inline code during conversion."""
+
+    name = "wa_inline_code"
+    priority = 1
+    placeholder_template = INLINE_CODE_PLACEHOLDER
+
+    def apply(self, content: str) -> str:
+        self._preserved.clear()
+
+        def save(match: re.Match[str]) -> str:
+            self._preserved.append(match.group(1))
+            return self.placeholder_template.format(len(self._preserved) - 1)
+
+        return re.sub(r"`([^`]+)`", save, content)
+
+
+class WhatsAppBoldToMarkdownRule(BaseRule):
+    """Convert WhatsApp bold (*text*) to Markdown bold (**text**)."""
+
+    name = "wa_bold_to_md"
+    priority = 10
+
+    def apply(self, content: str) -> str:
+        # Match *text* but not **text** (which would be empty bold)
+        # Use negative lookbehind/lookahead to avoid matching within words
+        return re.sub(
+            r"(?<![*\w])\*([^*]+)\*(?![*\w])",
+            r"**\1**",
+            content,
+        )
+
+
+class WhatsAppItalicToMarkdownRule(BaseRule):
+    """Convert WhatsApp italic (_text_) to Markdown italic (*text*)."""
+
+    name = "wa_italic_to_md"
+    priority = 20
+
+    def apply(self, content: str) -> str:
+        # Match _text_ avoiding underscores within words
+        return re.sub(
+            r"(?<![_\w])_([^_]+)_(?![_\w])",
+            r"*\1*",
+            content,
+        )
+
+
+class WhatsAppStrikethroughToMarkdownRule(BaseRule):
+    """Convert WhatsApp strikethrough (~text~) to Markdown (~~text~~)."""
+
+    name = "wa_strike_to_md"
+    priority = 30
+
+    def apply(self, content: str) -> str:
+        return re.sub(
+            r"(?<![~\w])~([^~]+)~(?![~\w])",
+            r"~~\1~~",
+            content,
+        )
+
+
+class WhatsAppCodeBlockToMarkdownRule(BaseRule):
+    """Restore code blocks for Markdown output."""
+
+    name = "wa_code_block_to_md"
+    priority = 90
+
+    def __init__(self, preserve_rule: WhatsAppPreserveCodeBlocksRule) -> None:
+        self._preserve_rule = preserve_rule
+
+    def apply(self, content: str) -> str:
+        for i, code in enumerate(self._preserve_rule._preserved):
+            content = content.replace(
+                CODE_BLOCK_PLACEHOLDER.format(i),
+                f"```{code}```",
+            )
+        return content
+
+
+class WhatsAppInlineCodeToMarkdownRule(BaseRule):
+    """Restore inline code for Markdown output."""
+
+    name = "wa_inline_code_to_md"
+    priority = 91
+
+    def __init__(self, preserve_rule: WhatsAppPreserveInlineCodeRule) -> None:
+        self._preserve_rule = preserve_rule
+
+    def apply(self, content: str) -> str:
+        for i, code in enumerate(self._preserve_rule._preserved):
+            content = content.replace(
+                INLINE_CODE_PLACEHOLDER.format(i),
+                f"`{code}`",
+            )
+        return content
+
+
+# ============================================================================
+# WhatsApp to HTML Rules
+# ============================================================================
+
+
+class WhatsAppBoldToHTMLRule(BaseRule):
+    """Convert WhatsApp bold (*text*) to HTML (<strong>text</strong>)."""
+
+    name = "wa_bold_to_html"
+    priority = 10
+
+    def apply(self, content: str) -> str:
+        return re.sub(
+            r"(?<![*\w])\*([^*]+)\*(?![*\w])",
+            r"<strong>\1</strong>",
+            content,
+        )
+
+
+class WhatsAppItalicToHTMLRule(BaseRule):
+    """Convert WhatsApp italic (_text_) to HTML (<em>text</em>)."""
+
+    name = "wa_italic_to_html"
+    priority = 20
+
+    def apply(self, content: str) -> str:
+        return re.sub(
+            r"(?<![_\w])_([^_]+)_(?![_\w])",
+            r"<em>\1</em>",
+            content,
+        )
+
+
+class WhatsAppStrikethroughToHTMLRule(BaseRule):
+    """Convert WhatsApp strikethrough (~text~) to HTML (<del>text</del>)."""
+
+    name = "wa_strike_to_html"
+    priority = 30
+
+    def apply(self, content: str) -> str:
+        return re.sub(
+            r"(?<![~\w])~([^~]+)~(?![~\w])",
+            r"<del>\1</del>",
+            content,
+        )
+
+
+class WhatsAppCodeBlockToHTMLRule(BaseRule):
+    """Restore code blocks for HTML output."""
+
+    name = "wa_code_block_to_html"
+    priority = 90
+
+    def __init__(self, preserve_rule: WhatsAppPreserveCodeBlocksRule) -> None:
+        self._preserve_rule = preserve_rule
+
+    def apply(self, content: str) -> str:
+        for i, code in enumerate(self._preserve_rule._preserved):
+            # Escape HTML entities in code
+            escaped_code = (
+                code.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+            )
+            content = content.replace(
+                CODE_BLOCK_PLACEHOLDER.format(i),
+                f"<pre><code>{escaped_code}</code></pre>",
+            )
+        return content
+
+
+class WhatsAppInlineCodeToHTMLRule(BaseRule):
+    """Restore inline code for HTML output."""
+
+    name = "wa_inline_code_to_html"
+    priority = 91
+
+    def __init__(self, preserve_rule: WhatsAppPreserveInlineCodeRule) -> None:
+        self._preserve_rule = preserve_rule
+
+    def apply(self, content: str) -> str:
+        for i, code in enumerate(self._preserve_rule._preserved):
+            # Escape HTML entities in code
+            escaped_code = (
+                code.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+            )
+            content = content.replace(
+                INLINE_CODE_PLACEHOLDER.format(i),
+                f"<code>{escaped_code}</code>",
+            )
+        return content
+
+
+class WhatsAppLineBreakToHTMLRule(BaseRule):
+    """Convert newlines to HTML line breaks.
+    
+    Priority 85 ensures this runs BEFORE code blocks are restored,
+    so newlines inside code blocks remain intact.
+    """
+
+    name = "wa_br_to_html"
+    priority = 85
+
+    def apply(self, content: str) -> str:
+        return content.replace("\n", "<br>\n")

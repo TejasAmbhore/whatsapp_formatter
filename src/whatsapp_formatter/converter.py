@@ -23,6 +23,21 @@ from .rules import (
     MarkdownStrikethroughRule,
     PreserveCodeBlocksRule,
     PreserveInlineCodeRule,
+    # WhatsApp to Markdown rules
+    WhatsAppBoldToMarkdownRule,
+    WhatsAppCodeBlockToMarkdownRule,
+    WhatsAppInlineCodeToMarkdownRule,
+    WhatsAppItalicToMarkdownRule,
+    WhatsAppPreserveCodeBlocksRule,
+    WhatsAppPreserveInlineCodeRule,
+    WhatsAppStrikethroughToMarkdownRule,
+    # WhatsApp to HTML rules
+    WhatsAppBoldToHTMLRule,
+    WhatsAppCodeBlockToHTMLRule,
+    WhatsAppInlineCodeToHTMLRule,
+    WhatsAppItalicToHTMLRule,
+    WhatsAppLineBreakToHTMLRule,
+    WhatsAppStrikethroughToHTMLRule,
 )
 
 
@@ -120,3 +135,51 @@ class HTMLToWhatsAppConverter(BaseConverter):
 
         if strip_remaining_tags:
             self.add_rule(HTMLStripTagsRule())
+
+
+class WhatsAppToMarkdownConverter(BaseConverter):
+    """Converts WhatsApp formatting to Markdown format."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._code_block_rule = WhatsAppPreserveCodeBlocksRule()
+        self._inline_code_rule = WhatsAppPreserveInlineCodeRule()
+
+        # Preserve code first
+        self.add_rule(self._code_block_rule)
+        self.add_rule(self._inline_code_rule)
+
+        # Convert formatting (order matters for nesting)
+        self.add_rule(WhatsAppBoldToMarkdownRule())
+        self.add_rule(WhatsAppItalicToMarkdownRule())
+        self.add_rule(WhatsAppStrikethroughToMarkdownRule())
+
+        # Restore code last
+        self.add_rule(WhatsAppCodeBlockToMarkdownRule(self._code_block_rule))
+        self.add_rule(WhatsAppInlineCodeToMarkdownRule(self._inline_code_rule))
+
+
+class WhatsAppToHTMLConverter(BaseConverter):
+    """Converts WhatsApp formatting to HTML format."""
+
+    def __init__(self, include_line_breaks: bool = True) -> None:
+        super().__init__()
+        self._code_block_rule = WhatsAppPreserveCodeBlocksRule()
+        self._inline_code_rule = WhatsAppPreserveInlineCodeRule()
+
+        # Preserve code first
+        self.add_rule(self._code_block_rule)
+        self.add_rule(self._inline_code_rule)
+
+        # Convert formatting (order matters for nesting)
+        self.add_rule(WhatsAppBoldToHTMLRule())
+        self.add_rule(WhatsAppItalicToHTMLRule())
+        self.add_rule(WhatsAppStrikethroughToHTMLRule())
+
+        # Restore code
+        self.add_rule(WhatsAppCodeBlockToHTMLRule(self._code_block_rule))
+        self.add_rule(WhatsAppInlineCodeToHTMLRule(self._inline_code_rule))
+
+        # Convert line breaks last
+        if include_line_breaks:
+            self.add_rule(WhatsAppLineBreakToHTMLRule())
