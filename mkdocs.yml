@@ -6,23 +6,11 @@ repo_url: https://github.com/tejasambhore/whatsapp_formatter
 repo_name: whatsapp_formatter
 
 theme:
-  name: material
-  palette:
-    - scheme: default
-      primary: green
-      accent: green
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: green
-      accent: green
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  features:
-    - content.code.copy
-    - navigation.sections
+  name: readthedocs
+  highlightjs: true
+  hljs_languages:
+    - python
+    - bash
 
 nav:
   - Home: index.md
