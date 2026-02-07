@@ -16,7 +16,4 @@ nav:
   - Home: index.md
 
 markdown_extensions:
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.superfences
   - tables
