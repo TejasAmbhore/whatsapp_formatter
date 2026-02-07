@@ -1,5 +1,5 @@
-site_name: WhatsApp Formatter
-site_description: A Python library for bidirectional conversion between WhatsApp, Markdown, and HTML formatting
+site_name: py-whatsapp-formatter - Python Library for WhatsApp Markdown & HTML Formatting
+site_description: Convert Markdown and HTML to WhatsApp text formatting in Python. Bidirectional converter for WhatsApp message formatting with zero dependencies. Perfect for chatbots and WhatsApp Business API.
 site_author: Tejas Ambhore
 
 repo_url: https://github.com/tejasambhore/whatsapp_formatter
