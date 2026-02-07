@@ -1,0 +1,34 @@
+site_name: WhatsApp Formatter
+site_description: A Python library for bidirectional conversion between WhatsApp, Markdown, and HTML formatting
+site_author: Tejas Ambhore
+
+repo_url: https://github.com/tejasambhore/whatsapp_formatter
+repo_name: whatsapp_formatter
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.sections
+
+nav:
+  - Home: index.md
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - tables
