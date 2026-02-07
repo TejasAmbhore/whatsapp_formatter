@@ -1,12 +1,27 @@
-# WhatsApp Formatter
+# py-whatsapp-formatter: Python Library for WhatsApp Text Formatting
 
-A Python library for bidirectional conversion between WhatsApp, Markdown, and HTML formatting.
+**Convert Markdown and HTML to WhatsApp formatting in Python** — A lightweight, zero-dependency library for bidirectional conversion between WhatsApp, Markdown, and HTML text formatting. Perfect for WhatsApp chatbots, messaging automation, WhatsApp Business API integrations, and any application that needs to format text for WhatsApp messages.
+
+**Key Features:**
+- 🔄 Bidirectional conversion (to and from WhatsApp format)
+- 📝 Supports Markdown ↔ WhatsApp and HTML ↔ WhatsApp
+- 🎯 Zero dependencies, fully typed
+- ⚡ Fast and lightweight
+- 🔗 Handles nested formatting correctly
 
 ## Installation
 
 ```bash
 pip install py-whatsapp-formatter
 ```
+
+## Use Cases
+
+- **WhatsApp Chatbots**: Format bot responses with proper WhatsApp styling
+- **WhatsApp Business API**: Convert rich text to WhatsApp-compatible format
+- **Content Management**: Transform CMS content (HTML/Markdown) for WhatsApp
+- **Message Automation**: Programmatically format WhatsApp messages
+- **AI Chat Integration**: Convert ChatGPT/Claude markdown responses to WhatsApp format
 
 ## Usage
 
