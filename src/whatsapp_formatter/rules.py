@@ -85,8 +85,12 @@ class MarkdownBoldRule(BaseRule):
     priority = 10
 
     def apply(self, content: str) -> str:
-        content = re.sub(r"\*\*(.+?)\*\*", rf"{BOLD_PLACEHOLDER}\1{BOLD_PLACEHOLDER}", content)
-        content = re.sub(r"__(.+?)__", rf"{BOLD_PLACEHOLDER}\1{BOLD_PLACEHOLDER}", content)
+        content = re.sub(
+            r"\*\*(.+?)\*\*", rf"{BOLD_PLACEHOLDER}\1{BOLD_PLACEHOLDER}", content
+        )
+        content = re.sub(
+            r"__(.+?)__", rf"{BOLD_PLACEHOLDER}\1{BOLD_PLACEHOLDER}", content
+        )
         return content
 
 
@@ -212,7 +216,9 @@ class HTMLParagraphRule(BaseRule):
     priority = 45
 
     def apply(self, content: str) -> str:
-        content = re.sub(r"<p>(.*?)</p>", r"\1\n\n", content, flags=re.IGNORECASE | re.DOTALL)
+        content = re.sub(
+            r"<p>(.*?)</p>", r"\1\n\n", content, flags=re.IGNORECASE | re.DOTALL
+        )
         content = re.sub(r"</p>", "\n\n", content, flags=re.IGNORECASE)
         content = re.sub(r"<p>", "", content, flags=re.IGNORECASE)
         return content
@@ -225,10 +231,14 @@ class HTMLUnorderedListRule(BaseRule):
     def apply(self, content: str) -> str:
         def convert_ul(match: re.Match[str]) -> str:
             list_content = match.group(1)
-            items = re.findall(r"<li>(.*?)</li>", list_content, flags=re.IGNORECASE | re.DOTALL)
+            items = re.findall(
+                r"<li>(.*?)</li>", list_content, flags=re.IGNORECASE | re.DOTALL
+            )
             return "\n".join(f"- {item.strip()}" for item in items) + "\n"
 
-        return re.sub(r"<ul>(.*?)</ul>", convert_ul, content, flags=re.IGNORECASE | re.DOTALL)
+        return re.sub(
+            r"<ul>(.*?)</ul>", convert_ul, content, flags=re.IGNORECASE | re.DOTALL
+        )
 
 
 class HTMLOrderedListRule(BaseRule):
@@ -238,10 +248,17 @@ class HTMLOrderedListRule(BaseRule):
     def apply(self, content: str) -> str:
         def convert_ol(match: re.Match[str]) -> str:
             list_content = match.group(1)
-            items = re.findall(r"<li>(.*?)</li>", list_content, flags=re.IGNORECASE | re.DOTALL)
-            return "\n".join(f"{i}. {item.strip()}" for i, item in enumerate(items, 1)) + "\n"
+            items = re.findall(
+                r"<li>(.*?)</li>", list_content, flags=re.IGNORECASE | re.DOTALL
+            )
+            return (
+                "\n".join(f"{i}. {item.strip()}" for i, item in enumerate(items, 1))
+                + "\n"
+            )
 
-        return re.sub(r"<ol>(.*?)</ol>", convert_ol, content, flags=re.IGNORECASE | re.DOTALL)
+        return re.sub(
+            r"<ol>(.*?)</ol>", convert_ol, content, flags=re.IGNORECASE | re.DOTALL
+        )
 
 
 class HTMLBlockquoteRule(BaseRule):
@@ -463,9 +480,7 @@ class WhatsAppCodeBlockToHTMLRule(BaseRule):
         for i, code in enumerate(self._preserve_rule._preserved):
             # Escape HTML entities in code
             escaped_code = (
-                code.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
+                code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             )
             content = content.replace(
                 CODE_BLOCK_PLACEHOLDER.format(i),
@@ -487,9 +502,7 @@ class WhatsAppInlineCodeToHTMLRule(BaseRule):
         for i, code in enumerate(self._preserve_rule._preserved):
             # Escape HTML entities in code
             escaped_code = (
-                code.replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
+                code.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             )
             content = content.replace(
                 INLINE_CODE_PLACEHOLDER.format(i),
@@ -500,7 +513,7 @@ class WhatsAppInlineCodeToHTMLRule(BaseRule):
 
 class WhatsAppLineBreakToHTMLRule(BaseRule):
     """Convert newlines to HTML line breaks.
-    
+
     Priority 85 ensures this runs BEFORE code blocks are restored,
     so newlines inside code blocks remain intact.
     """

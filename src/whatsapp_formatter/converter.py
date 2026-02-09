@@ -23,21 +23,21 @@ from .rules import (
     MarkdownStrikethroughRule,
     PreserveCodeBlocksRule,
     PreserveInlineCodeRule,
-    # WhatsApp to Markdown rules
-    WhatsAppBoldToMarkdownRule,
-    WhatsAppCodeBlockToMarkdownRule,
-    WhatsAppInlineCodeToMarkdownRule,
-    WhatsAppItalicToMarkdownRule,
-    WhatsAppPreserveCodeBlocksRule,
-    WhatsAppPreserveInlineCodeRule,
-    WhatsAppStrikethroughToMarkdownRule,
     # WhatsApp to HTML rules
     WhatsAppBoldToHTMLRule,
+    # WhatsApp to Markdown rules
+    WhatsAppBoldToMarkdownRule,
     WhatsAppCodeBlockToHTMLRule,
+    WhatsAppCodeBlockToMarkdownRule,
     WhatsAppInlineCodeToHTMLRule,
+    WhatsAppInlineCodeToMarkdownRule,
     WhatsAppItalicToHTMLRule,
+    WhatsAppItalicToMarkdownRule,
     WhatsAppLineBreakToHTMLRule,
+    WhatsAppPreserveCodeBlocksRule,
+    WhatsAppPreserveInlineCodeRule,
     WhatsAppStrikethroughToHTMLRule,
+    WhatsAppStrikethroughToMarkdownRule,
 )
 
 
