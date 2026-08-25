@@ -24,7 +24,7 @@ from .converter import (
 )
 from .rules import BaseRule, FormattingRule
 
-__version__ = "1.1.0"
+__version__ = "1.0.6"
 __all__ = [
     # Markdown <-> WhatsApp
     "convert_markdown_to_whatsapp",
