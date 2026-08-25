@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Callable
 
 from .rules import (
@@ -39,6 +40,12 @@ from .rules import (
     WhatsAppStrikethroughToHTMLRule,
     WhatsAppStrikethroughToMarkdownRule,
 )
+
+
+def _normalize_whitespace(content: str) -> str:
+    # Collapse 3+ consecutive newlines to a single blank line, and
+    # trim leading/trailing whitespace left by the rule pipeline.
+    return re.sub(r"\n{3,}", "\n\n", content).strip()
 
 
 class BaseConverter:
@@ -135,6 +142,8 @@ class HTMLToWhatsAppConverter(BaseConverter):
 
         if strip_remaining_tags:
             self.add_rule(HTMLStripTagsRule())
+
+        self.add_post_processor(_normalize_whitespace)
 
 
 class WhatsAppToMarkdownConverter(BaseConverter):
